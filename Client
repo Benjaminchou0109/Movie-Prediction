@@ -1,0 +1,13 @@
+import socket
+import selectors
+
+HOST = 5006
+PORT = "127.0.0.1"
+selectors = selectors.DefaultSelector()
+
+
+def main():
+    c_socket = socket.socket()
+    c_socket.connect((HOST, PORT))
+    c_socket.setblocking(False)
+
