@@ -1,13 +1,48 @@
 import socket
 import selectors
+selector = selectors.DefaultSelector()
 
 HOST = 5006
 PORT = "127.0.0.1"
-selectors = selectors.DefaultSelector()
 
 
 def main():
     c_socket = socket.socket()
     c_socket.connect((HOST, PORT))
     c_socket.setblocking(False)
+    
 
+def inputs(c_socket, selector):
+    try:
+        msg = ""
+        while msg != "quit":
+            print("Options: \n 1. Find the correlation between movie budget and profit"
+                  "\n 2. Find the .... \n 3. Find the .... \n Quit to stop" )
+            msg = input("What do you want to do? \n (Please type 1,2,3 or quit)")
+            if msg == '1':
+                c_socket.send(msg.encode())
+                pass
+            elif msg == '2':
+                c_socket.send(msg.encode())
+                pass
+            elif msg == '3':
+                c_socket.send(msg.encode())
+                pass
+            elif msg == 'quit' or 'Quit':
+                c_socket.send(msg.encode())
+                close_conn(c_socket, selector)
+            else:
+                print("Invalid Command")
+    except IOError as err:
+        print("Error found: err")
+        close_conn(c_socket, selector)
+    except OSError as err:
+        print("Error found: err")
+        close_conn(c_socket, selector)
+        
+
+
+def close_conn(c_socket, selector):
+        print("Closing Connection")
+        c_socket.close()
+        selector.unregister()
