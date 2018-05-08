@@ -48,7 +48,8 @@ def requests(server, sel):
 
 
 def corr():
-    pass
+    null = input("Please input your null hypotheses:")
+    alt = input("Please input your alternative hypotheses:")ass
 
 def close_connection(server, sel):
     print("Closing Connection")
