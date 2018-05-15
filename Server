@@ -3,16 +3,17 @@ import selectors
 import numpy
 import scipy
 
-HOST = 5006
-PORT = "127.0.0.1"
-
-sel = selectors.DefaultSelector()
+HOST = "127.0.0.1"
+PORT = 5005
 
 
 def main():
     server = socket.socket()
     server.bind((HOST, PORT))
+    server.setblocking(False)
     server.listen(100)
+    sel = selectors.DefaultSelector()
+    sel.register(server, selectors.EVENT_READ, accept)
 
     while True:
         for key, mask in sel.select():
@@ -23,7 +24,7 @@ def main():
 def accept(server, sel):
     c, addr = server.accept()
     print("Accepted Connection from{}".format(c))
-    sel.register(server, selectors.EVENT_READ, requests)
+    sel.register(c, selectors.EVENT_READ, requests)
 
 
 def requests(server, sel):
@@ -51,10 +52,12 @@ def corr():
     null = input("Please input your null hypotheses:")
     alt = input("Please input your alternative hypotheses:")
 
+
 def close_connection(server, sel):
     print("Closing Connection")
     sel.unregister()
     server.close()
 
-if __name__ = '__main__':
+
+if __name__ == '__main__':
     main()
