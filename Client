@@ -2,15 +2,15 @@ import socket
 import selectors
 selector = selectors.DefaultSelector()
 
+PORT = 5006
 HOST = "127.0.0.1"
-PORT = 5005
 
 
 def main():
     c_socket = socket.socket()
     c_socket.connect((HOST, PORT))
-    c_socket.setblocking(False)
     inputs(c_socket, selector)
+
 
 def inputs(c_socket, selector):
     try:
@@ -18,34 +18,48 @@ def inputs(c_socket, selector):
         while msg != "quit":
             print("Options: \n 1. Find the correlation between movie budget and profit"
                   "\n 2. Find the .... \n 3. Find the .... \n Quit to stop" )
-            msg = input("What do you want to do? \n (Please type 1,2,3 or quit)")
+            msg = input("What do you want to do? \nPlease type 1,2,3 or quit) \n >>>")
             if msg == '1':
                 c_socket.send(msg.encode())
                 pass
             elif msg == '2':
                 c_socket.send(msg.encode())
-                pass
+                genre_client(c_socket)
+
             elif msg == '3':
                 c_socket.send(msg.encode())
                 pass
             elif msg == 'quit' or 'Quit':
                 c_socket.send(msg.encode())
-                close_conn(c_socket)
+                close_conn(c_socket, selector)
             else:
                 print("Invalid Command")
     except IOError as err:
         print("Error found: err")
-        close_conn(c_socket)
+        close_conn(c_socket, selector)
     except OSError as err:
         print("Error found: err")
-        close_conn(c_socket)
+        close_conn(c_socket, selector)
 
+def alpha1():
+    alpha = input("Please input your alpha:")
+    if int(alpha) <= 0 or int(alpha) > 1:
+        print("Invalid alpha.\n Please put in a value that is smaller than 1 and larger than 0")
+        return alpha1()
 
-def close_conn(c_socket):
-    print("Closing Connection")
-    c_socket.send("quit".encode())
-    c_socket.close()
+def genre_client(c_socket):
+    genre = input("What genre do you want to search for? (Comedy, Action, Romance, Family, Animation)")
+    c_socket.send(genre.encode())
+    result1 = 0
+    if result1 > alpha1():
+        print("You failed! There is no correlation \n P≠0")
+    elif result1 < alpha1():
+        print("There is a correlation! \n P=0")
 
+def close_conn(c_socket, selector):
+        print("Closing Connection")
+        c_socket.close()
+        selector.unregister()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
