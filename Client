@@ -2,15 +2,15 @@ import socket
 import selectors
 selector = selectors.DefaultSelector()
 
-HOST = 5006
-PORT = "127.0.0.1"
+HOST = "127.0.0.1"
+PORT = 5005
 
 
 def main():
     c_socket = socket.socket()
     c_socket.connect((HOST, PORT))
     c_socket.setblocking(False)
-    
+    inputs(c_socket, selector)
 
 def inputs(c_socket, selector):
     try:
@@ -30,19 +30,22 @@ def inputs(c_socket, selector):
                 pass
             elif msg == 'quit' or 'Quit':
                 c_socket.send(msg.encode())
-                close_conn(c_socket, selector)
+                close_conn(c_socket)
             else:
                 print("Invalid Command")
     except IOError as err:
         print("Error found: err")
-        close_conn(c_socket, selector)
+        close_conn(c_socket)
     except OSError as err:
         print("Error found: err")
-        close_conn(c_socket, selector)
-        
+        close_conn(c_socket)
 
 
-def close_conn(c_socket, selector):
-        print("Closing Connection")
-        c_socket.close()
-        selector.unregister()
+def close_conn(c_socket):
+    print("Closing Connection")
+    c_socket.send("quit".encode())
+    c_socket.close()
+
+
+if __name__ == '__main__':
+    main()
