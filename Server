@@ -1,22 +1,21 @@
 import socket
 import selectors
 import numpy as np
-import pandas
+import pandas as pd
 import scipy
 from scipy import stats
 import json
-import threading
 
 HOST = "127.0.0.1"
-PORT = 5006
+PORT = 5007
 
 
-df = pandas.read_csv('/Users/benjamin/Desktop/Metadatabase.csv', encoding='latin')
-df.drop(['adult','popularity'], axis=1)
+df = pd.read_csv('/Users/benjamin/Desktop/Metadatabase.csv', encoding='latin')
+df[['budget', 'revenue']] = df[['budget', 'revenue']].apply(pd.to_numeric, errors='coerce')
+df = df[df['budget'] > 0]
+df = df[df['revenue'] > 0]
 
-for g in df:
-    if g[0] == 0 or g[3] == 0:
-        df.drop([g])
+
 
 
 def main():
@@ -37,22 +36,21 @@ def main():
 def accept(server, sel):
     c, addr = server.accept()
     print("Accepted Connection from:{}".format(c))
-    c.setblocking(False)
+    c.setblocking(True)
     sel.register(c, selectors.EVENT_READ, requests)
 
 
-
-def requests(server, sel):
+def requests(client, sel):
     try:
-        data = server.recv(1024)
+        data = client.recv(1024)
         if data:
             data = data.decode()
             if data == "1":
-                corr(server)
+                pass
             elif data == "2":
-                genre(server)
+                genre(client)
             elif data == "close":
-                close_connection(server, sel)
+                close_connection(client, sel)
             else:
                 return "Invalid Command"
     except IOError as err:
@@ -61,19 +59,10 @@ def requests(server, sel):
         print("There is an error of{}".format(err1))
 
 
-
-def corr(server):
-    null = input("Please input your null hypotheses:")
-    alt = input("Please input your alternative hypotheses:")
-
-
-def genre(server):
-    genre = server.recv(1024)
-    genre.decode()
-    budget = []
-    revenue = []
-
-
+def genre(client):
+    print("yes")
+    genre = client.recv(1024).decode()
+    print("yes")
     for i, row in df.iterrows():
         jsonstring = row[2].replace("'", "\"")
         genre_cat = json.loads(jsonstring)
@@ -81,14 +70,8 @@ def genre(server):
         for x in genre_cat:
             movies.append(x['name'])
         if genre in movies:
-            budget.append(row[1])
-            revenue.append(row[5])
-        else:
-            print("There are no movies in this category!")
-    r, pvalue = scipy.stats.pearsonr(budget, revenue)
-
-    server.send(str(r).encode())
-
+            r, pvalue = scipy.stats.pearsonr(df['budget'], df['revenue'])
+            client.send(str(pvalue).encode())
 
 
 def close_connection(server, sel):
