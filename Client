@@ -5,7 +5,6 @@ selector = selectors.DefaultSelector()
 HOST = "127.0.0.1"
 PORT = 5007
 
-
 def main():
     c_socket = socket.socket()
     c_socket.connect((HOST, PORT))
@@ -22,7 +21,7 @@ def inputs(c_socket, selector):
             msg = input("What do you want to do? \n（Please type 1,2,3 or quit) \n>>>")
             if msg == '1':
                 c_socket.send(msg.encode())
-                pass
+                linear_regres_client(c_socket)
             elif msg == '2':
                 c_socket.send(msg.encode())
                 genre_client(c_socket)
@@ -67,11 +66,21 @@ def genre_client(c_socket):
         print("Please input a right category")
         genre_client(c_socket)
 
+def linear_regres_client(c_socket):
+    linearregres = input("What genre do you want to search for? (Comedy, Action, Romance, Family, Animation)\n>>>")
+    if linearregres == "Comedy" or linearregres == "Action" or linearregres == "Romance" or linearregres == "Family" or linearregres == "Animation":
+        c_socket.send(linearregres.encode())
+    print(linearregres)
+    result = c_socket.recv(1024)
+    result = str(result.decode())
+    print(result)
 
 def close_conn(c_socket):
     print("Closing Connection")
     c_socket.send("quit".encode())
     c_socket.close()
+
+
 
 
 if __name__ == "__main__":
