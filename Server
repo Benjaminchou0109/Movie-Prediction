@@ -5,12 +5,14 @@ import pandas as pd
 import scipy
 from scipy import stats
 import json
+from sklearn.linear_model import LinearRegression
+
 
 HOST = "127.0.0.1"
 PORT = 5007
 
 
-df = pd.read_csv('/Users/benjamin/Desktop/Metadatabase.csv', encoding='latin')
+df = pd.read_csv('Metadatabase.csv', encoding='latin')
 df[['budget', 'revenue']] = df[['budget', 'revenue']].apply(pd.to_numeric, errors='coerce')
 df = df[df['budget'] > 0]
 df = df[df['revenue'] > 0]
@@ -46,7 +48,7 @@ def requests(client, sel):
         if data:
             data = data.decode()
             if data == "1":
-                pass
+                linear_regres()
             elif data == "2":
                 genre(client)
             elif data == "close":
@@ -73,11 +75,40 @@ def genre(client):
             r, pvalue = scipy.stats.pearsonr(df['budget'], df['revenue'])
             client.send(str(pvalue).encode())
 
+def linear_regres(client):
+    print("yes")
+    linearregres = client.recv(1024).decode()
+    print("yes")
+    for i, row in df.iterrows():
+        jsonstring = row[2].replace("'", "\"")
+    genre_cat = json.loads(jsonstring)
+    movies = []
+    for x in genre_cat:
+        movies.append(x['name'])
+    if linearregres in movies:
+        raw_data = pd.read_csv('Metadatabase.csv', encoding='latin1')
+        # print(raw_data)
+        # data = pd.DataFrame(raw_data).drop(["genres", "release_date", "title"], axis=1)
+        data = pd.DataFrame(raw_data).drop([ "adult","genres","popularity", "release_date", "title"], axis=1)
+
+        print(data)
+        x_y = np.array(data)
+        x, y = x_y[:,0], x_y[:,1]
+        x, y = x.reshape(-1,1), y.reshape(-1, 1)
+        lin_regression = LinearRegression()
+        lin_regression.fit(x,y)
+        m = float(lin_regression.coef_)
+        b = float(lin_regression.intercept_)
+        predictions = lin_regression.predict(x)
+        finalresult= "Linear Regression Formula: y = {0:.3f}x + {1:.3f}".format(m, b)
+        client.send(str(finalresult).encode())
+
 
 def close_connection(server, sel):
     print("Closing Connection")
     sel.unregister()
     server.close()
+
 
 
 if __name__ == '__main__':
